@@ -3,7 +3,7 @@
 #include<math.h> 
 #include<random>
 
-// Raed Massoud
+// Raed Massoud | Github.com/RaedMassoud
 // 5/15/2024
 // 
 // Car and Pot hole Game | OpenGL | C++ | 330 lines
