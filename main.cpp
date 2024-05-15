@@ -6,7 +6,7 @@
 // Raed Massoud
 // 5/15/2024
 // 
-// Car and Pothole Game | OpenGL | C++ | 330 lines
+// Car and Pot hole Game | OpenGL | C++ | 330 lines
 // LEFT MOUSE BUTTON IS USED TO PLAY THE GAME
 
 static bool RUNNING = true; // Used to terminate recursive call of the timer function when the game ends
