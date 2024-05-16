@@ -6,26 +6,30 @@
 // Raed Massoud | Github.com/RaedMassoud
 // 5/15/2024
 // 
-// Car and Pot hole Game | OpenGL | C++ | 330 lines
-// LEFT MOUSE BUTTON IS USED TO PLAY THE GAME
+// Car and Pot hole Game | OpenGL | C++ 
+// SPACE KEY IS USED TO PLAY THE GAME
+// PLAYER HAS 3 LIVES
+// viewingAngle CAN BE SET TO 0.0 OR 90.0 FOR DIFFERENT GAME PERSPECTIVES
 
 static bool RUNNING = true; // Used to terminate recursive call of the timer function when the game ends
+static int playerLivesCount = 3; // Number of lives the player has
+static double viewingAngle = 0.0; // Used to give the player different game perspectives (0.0 or 90.0)
 
 GLfloat roadStripLocation = 0.0; // Represents the location of the road strips
 static const int FPS = 60; // FPS
 static bool rightSide = true; // what side is the car on
 static bool move = false; // used to know when to make changes to the car Y-AXIS for fluid motion
-static double carLocation = 75; // car location ON THE Y-AXIS ( 75 or -135 )
+static double carLocationY = 75; // car location ON THE Y-AXIS ( 75 or -135 | left or right side )
 
 // Pothole variables intial values
-static double potholeLocationX = 2000;
+static double potholeLocationX = 2200;
 static double potholeLocationY = 75;
 
 static double potholeLocationX2 = 1700;
 static double potholeLocationY2 = 75;
 
 static double potholeLocationX3 = 1900;
-static double potholeLocationY3 = 75;
+static double potholeLocationY3 = -135;
 
 
 // White Road Strip Func
@@ -58,9 +62,13 @@ void roadPotHoles () {
 	glColor3f(0.0, 0.0, 0.0);
     glBegin(GL_POLYGON);
         glVertex2f(0.0,0.0);
+		glVertex2f(-10.0,75.0/2);
         glVertex2f(0.0,75.0);
+		glVertex2f(75.0/2, 85.0);
         glVertex2f(75.0,75.0);
+		glVertex2f(85.0,75.0/2);
         glVertex2f(75.0,0.0);
+		glVertex2f(75.0/2,-10.0);
     glEnd();
 }
 
@@ -101,7 +109,7 @@ void car() {
 	glPopMatrix();
 
 
-	// Car headlights
+	// Car headlights 1/2
 	glPushMatrix();
 	glColor3f(0.95, 0.95, 0.95);
 	glTranslatef(110.0, 15, 0.0);
@@ -112,6 +120,7 @@ void car() {
 	glEnd();
 	glPopMatrix();
 
+	// Car headlights 2/2
 	glPushMatrix();
 	glColor3f(0.95, 0.95, 0.95);
 	glTranslatef(110.0, 60, 0.0);
@@ -124,11 +133,71 @@ void car() {
 	
 }
 
+// Player live shape (Normal square)
+void playerLives() {
+	glBegin(GL_POLYGON);
+		glVertex2f(0.0,0.0);
+        glVertex2f(50.0,0.0);
+		glVertex2f(50.0,50.0);
+        glVertex2f(0.0,50.0);
+	glEnd();
+}
 
+// Displays the right amount of lives depending on playerLivesCount
+void playerLivesDisplay() {
+
+	glPushMatrix();
+	if(viewingAngle == 90.0) // If vertical game perspective move lives to the side
+		glTranslatef(-650, 0.0, 0.0);
+
+	glColor3f(0.0, 0.80, 0.0); // GREEN COLOR | Override color when needed
+	if(playerLivesCount == 3) { // Display 3 green blocks
+		glTranslatef(-85.0, 500, 0.0);
+		playerLives();
+		glTranslatef(60.0, 0.0, 0.0);
+		playerLives();
+		glTranslatef(60, 0.0, 0.0);
+		playerLives();
+	} else if(playerLivesCount == 2) { // Display 2 green blocks 1 red
+		glTranslatef(-85.0, 500, 0.0);
+		playerLives();
+		glTranslatef(60.0, 0.0, 0.0);
+		playerLives();
+		glColor3f(0.80, 0.0, 0.0); //
+		glTranslatef(60, 0.0, 0.0);
+		playerLives();
+	} else if(playerLivesCount == 1) { // Display 1 green block 2 red
+		glTranslatef(-85.0, 500, 0.0);
+		playerLives();
+		glColor3f(0.80, 0.0, 0.0); //
+		glTranslatef(60.0, 0.0, 0.0);
+		playerLives();
+		glTranslatef(60, 0.0, 0.0);
+		playerLives();
+	} else { 							// Display all red blocks
+		glColor3f(0.80, 0.0, 0.0); //
+		glTranslatef(-85.0, 500, 0.0);
+		playerLives();
+		glTranslatef(60.0, 0.0, 0.0);
+		playerLives();
+		glTranslatef(60, 0.0, 0.0);
+		playerLives();
+		RUNNING = false; // Stop game.
+	}
+	glPopMatrix();
+}
+
+// Main Display function
 void display (void) 
 {
     glClear(GL_COLOR_BUFFER_BIT || GL_DEPTH_BUFFER_BIT); 
 
+	playerLivesDisplay(); // Display player lives count
+
+	glPushMatrix(); // game perspectives
+	glRotatef(viewingAngle, 0, 0, 1);
+	if(viewingAngle == 90.0) // Apply scale to everything if viewing perspective is vertical
+		glScalef(.75, .75, .75);
 
 	// Road and Road Strips Begin
 	glPushMatrix();
@@ -175,7 +244,7 @@ void display (void)
 
 	// Car 
 	glPushMatrix();
-	glTranslatef(-750, carLocation, 0);
+	glTranslatef(-750, carLocationY, 0);
 	car();
 	glPopMatrix();
 
@@ -195,14 +264,16 @@ void display (void)
 	roadPotHoles();
 	glPopMatrix();
 
+	glPopMatrix();
     glFlush(); 
     glutSwapBuffers();
 }
 
-// Mouse function. Active movement when mouse is clicked
-void mouse(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		move = true; // This activates a code block in the timer functions
+// Keyboard function. Active movement when space key is clicked
+void NormalKeyHandler(unsigned char key, int x, int y) {
+	switch(key) {
+		case 32: move = true; break;
+		default: break;
 	}
 }
 
@@ -223,13 +294,13 @@ void timer(int value)
 
 		// Change y axis depending on which side of the road the car is on
 		if(rightSide) {
-			carLocation -= 5;
+			carLocationY -= 5;
 		} else {
-			carLocation += 5;
+			carLocationY += 5;
 		}
 
 		// Stop moving the car when it reaches one of its 2 locations (left or right)
-		if(carLocation == -135 || carLocation == 75) {
+		if(carLocationY == -135 || carLocationY == 75) {
 			move = false;
 			// Switch car side
 			if(rightSide)
@@ -275,14 +346,20 @@ void timer(int value)
 	// If the pothole x coordinate overlaps with our car costant x coordinate AND the difference between 
 	// the car and the pothote y coordinates is small it means the car is overlaping the pothole on both 
 	// the x and y axis.
-	if(-750 <= potholeLocationX && potholeLocationX <= -625  && abs(carLocation - potholeLocationY) < 25)
-		RUNNING = false;
+	if(-750 <= potholeLocationX && potholeLocationX <= -625  && abs(carLocationY - potholeLocationY) < 25) {
+		potholeLocationX = -880;
+		playerLivesCount--;
+	}
 
-	if(-750 <= potholeLocationX2 && potholeLocationX2 <= -625  && abs(carLocation - potholeLocationY2) < 25)
-		RUNNING = false;
+	if(-750 <= potholeLocationX2 && potholeLocationX2 <= -625  && abs(carLocationY - potholeLocationY2) < 25) {
+		potholeLocationX2 = -880;
+		playerLivesCount--;
+	}
 
-	if(-750 <= potholeLocationX3 && potholeLocationX3 <= -625  && abs(carLocation - potholeLocationY3) < 25)
-		RUNNING = false;
+	if(-750 <= potholeLocationX3 && potholeLocationX3 <= -625  && abs(carLocationY - potholeLocationY3) < 25) {
+		potholeLocationX3 = -880;
+		playerLivesCount--;
+	}
 		
 
 	// Break recursive call if collision is detected
@@ -308,7 +385,7 @@ void Init (void)
 	glMatrixMode(GL_PROJECTION); 
 	glLoadIdentity(); 
 	gluOrtho2D(-800, 800, -600, 600); 
-
+	gluLookAt(0 ,0 ,0, 0, 0, -4, 0, 1, 0);
 } 
 
 // Main Function
@@ -318,11 +395,11 @@ int main (int argc, char** argv)
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); 
 	glutInitWindowSize(800, 600); 
 	glutInitWindowPosition(0, 0); 
-	glutCreateWindow("Car and Pothole Game"); 
+	glutCreateWindow("Car and Pot hole Game"); 
 	Init(); 
 	
 	glutDisplayFunc(display); 
-	glutMouseFunc(mouse);
+	glutKeyboardFunc(NormalKeyHandler);
 	glutTimerFunc(100,timer,0);
 
 	glutMainLoop(); 
