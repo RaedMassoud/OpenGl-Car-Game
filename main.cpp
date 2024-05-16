@@ -3,7 +3,7 @@
 #include<math.h> 
 #include<random>
 
-// Raed Massoud | Github.com/RaedMassoud
+// Raed Massoud | Github.com/RaedMassoud | git@github.com:RaedMassoud/OpenGl-Car-Game.git
 // 5/15/2024
 // 
 // Car and Pot hole Game | OpenGL | C++ 
